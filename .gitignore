@@ -5,3 +5,5 @@
 # Maven
 log/
 target/
+# others files
+result.txt

@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -24,7 +25,7 @@ public class ParallelStreamDuplicatesFinderTest {
 
     @Test
     public void search() throws Exception {
-        Path dir = null;
+        Path dir = Paths.get("src/test/resources/root");
         Stream<List<String>> stream = duplicatesFinder.search(dir);
         assertNotNull(stream);
         List<List<String>> list = stream.collect(Collectors.toList());
