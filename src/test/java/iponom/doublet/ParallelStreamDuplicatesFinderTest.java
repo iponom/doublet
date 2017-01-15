@@ -16,6 +16,8 @@ import static org.junit.Assert.*;
  */
 public class ParallelStreamDuplicatesFinderTest {
 
+    private static final String ROOT = "src/test/resources/root";
+
     ParallelStreamDuplicatesFinder duplicatesFinder;
 
     @Before
@@ -25,7 +27,7 @@ public class ParallelStreamDuplicatesFinderTest {
 
     @Test
     public void search() throws Exception {
-        Path dir = Paths.get("src/test/resources/root");
+        Path dir = Paths.get(ROOT);
         Stream<List<String>> stream = duplicatesFinder.search(dir);
         assertNotNull(stream);
         List<List<String>> list = stream.collect(Collectors.toList());

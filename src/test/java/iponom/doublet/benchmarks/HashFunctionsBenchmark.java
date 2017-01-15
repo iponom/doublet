@@ -3,6 +3,7 @@ package iponom.doublet.benchmarks;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import com.google.common.hash.HashingInputStream;
+import iponom.doublet.FileUtils;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -25,10 +26,8 @@ import java.nio.file.Paths;
  HashFunctionsBenchmark.measureGetSize           thrpt   50  75775,306 ±  616,851  ops/s
  HashFunctionsBenchmark.measureGuavaFastHash     thrpt   50  52614,099 ± 1204,642  ops/s
  HashFunctionsBenchmark.measureGuavaFastHash64   thrpt   50  51265,305 ± 2048,213  ops/s
- HashFunctionsBenchmark.measureGuavaFastHash64   thrpt   50  27694,631 ± 1326,460  ops/s //two calls
  HashFunctionsBenchmark.measureCompare           thrpt   20      0,089 ±    0,001  ops/s
  HashFunctionsBenchmark.measureLoop              thrpt   20      1,591 ±    0,067  ops/s
- HashFunctionsBenchmark.measureCustomCompare     thrpt   20      0,401 ±    0,029  ops/s
  HashFunctionsBenchmark.measureCustomCompare     thrpt   20      0,489 ±    0,036  ops/s
 
  *
@@ -38,22 +37,15 @@ public class HashFunctionsBenchmark {
 
     private final static String FILE_1 = "c:/Temp/test1.avi";
     private final static String FILE_2 = "c:/Temp/test2.avi";
-    private static int DEFAULT_BUFFER_SIZE = 8192 * 4;
 
    @Benchmark
     @Warmup(iterations = 3)
     @Measurement(iterations = 5)
     public void measureGuavaFastHash64() throws IOException {
-        HashFunction hashFunction = Hashing.goodFastHash(64);
-        try (
-                HashingInputStream stream1 = new HashingInputStream(hashFunction, inputStream());
-                HashingInputStream stream2 = new HashingInputStream(hashFunction, inputStream());
-        ) {
-            boolean sameContent = stream1.hash().asLong() == stream2.hash().asLong();
-            if (sameContent) {
-                callMe();
-            }
-        }
+       HashFunction hashFunction = Hashing.goodFastHash(64);
+       try (HashingInputStream hashingInputStream = new HashingInputStream(hashFunction, inputStream())) {
+           hashingInputStream.hash().asInt();
+       }
     }
 
     @Benchmark
@@ -104,21 +96,7 @@ public class HashFunctionsBenchmark {
     @Warmup(iterations = 2)
     @Measurement(iterations = 2)
     public void measureCustomCompare() throws IOException {
-        try (
-                InputStream is1 = new BufferedInputStream(inputStream(), DEFAULT_BUFFER_SIZE);
-                InputStream is2 = new BufferedInputStream(anotherInputStream(), DEFAULT_BUFFER_SIZE)
-        ){
-            byte[] arr1 = new byte[DEFAULT_BUFFER_SIZE];
-            byte[] arr2 = new byte[DEFAULT_BUFFER_SIZE];
-            while (true) {
-                int count1 = is1.read(arr1);
-                int count2 = is2.read(arr2);
-                if (count1 < 0 || count2 < 0) break;
-                for (int i = 0; i < count1; i++) {
-                    if (arr1[i] != arr2[i]) return;
-                }
-            }
-        }
+        FileUtils.equals(Paths.get(FILE_1), Paths.get(FILE_2));
     }
 
     private InputStream inputStream() throws IOException {

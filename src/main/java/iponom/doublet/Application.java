@@ -31,6 +31,7 @@ public class Application {
                         .flatMap((list) -> Stream.concat(list.stream(), Stream.of("")))
                         .collect(Collectors.toList());
                 Files.write(Paths.get(RESULT_FILE_NAME), result);
+                System.out.println("The search has been finished. See " + RESULT_FILE_NAME);
             } else {
                 System.err.println(args[0] + " is not a directory");
             }
