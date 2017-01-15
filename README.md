@@ -13,8 +13,9 @@ mvn spring-boot:run -Drun.arguments="C:/some/directory"
 
 ### Implementation notes
 
-A brute force implementations gives the n! performance in the worst case (n - file count).
-We can calculate some fast hash and group by it. Performance - n. But after that we need to compare files in every group.
+A brute-force implementations gives us factorial order-of-growth in the worst case.
+We can calculate some fast hash and group files by it. This calculation gives linear order-of-growth. 
+But after that we need to compare files in every group.
 For selecting the best solution I made some micro-benchmarks before implementation (see HashFunctionsBenchmark). 
 
 ### Performance settings
