@@ -10,6 +10,6 @@ import java.util.stream.Stream;
  */
 public interface DuplicatesFinder {
 
-    Stream<List<String>> search(Path directory) throws IOException;
+    Stream<List<String>> search(Path directory);
 
 }

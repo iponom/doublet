@@ -1,8 +1,10 @@
 package iponom.doublet;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -23,26 +27,46 @@ public class ParallelStreamDuplicatesFinder implements DuplicatesFinder {
 
     private static final int PREFIX_SIZE = 128;
 
+    @Value("${doublet.parallelism}")
+    private int parallelism;
+
     @Autowired
     private PathHashGenerator pathHashGenerator;
 
+    private ForkJoinPool forkJoinPool;
+
+    @PostConstruct
+    public void init() {
+        forkJoinPool = new ForkJoinPool(parallelism);
+    }
+
     @Override
-    public Stream<List<String>> search(Path directory) throws IOException {
-        Map<GroupKey, List<PathEntry>> map = Files.walk(directory).parallel()
-                .filter((path) -> !Files.isDirectory(path))
-                .map(this::createPathEntry)
-                .collect(Collectors.groupingBy((entry) -> entry.getKey()));
+    public Stream<List<String>> search(Path directory) {
+        try {
+            Map<GroupKey, List<PathEntry>> map = forkJoinPool.submit(() ->
+                    Files.walk(directory)
+                    .parallel()
+                    .filter((path) -> !Files.isDirectory(path))
+                    .map(this::createPathEntry)
+                    .collect(Collectors.groupingBy((entry) -> entry.getKey()))
+            ).get();
 
-        Stream<List<Path>> stream = map.entrySet().stream().parallel()
-                .filter((entry) -> entry.getValue().size() > 1)
-                .map((listEntry) -> listEntry.getValue())
-                .flatMap(this::findEquals);
+            Stream<List<Path>> stream = forkJoinPool.submit(() ->
+                    map.entrySet().stream()
+                    .parallel()
+                    .filter((entry) -> entry.getValue().size() > 1)
+                    .map((listEntry) -> listEntry.getValue())
+                    .flatMap(this::findEquals)
+            ).get();
 
-        return stream.map((listEntry) -> listEntry.stream()
-                .map(directory::relativize)
-                .sorted(Comparator.comparing(Path::getNameCount))
-                .map((path) -> path.toString()).collect(Collectors.toList())
-        ).sorted(Comparator.comparing((list) -> list.get(0)));
+            return stream.map((listEntry) -> listEntry.stream()
+                    .map(directory::relativize)
+                    .sorted(Comparator.comparing(Path::getNameCount))
+                    .map((path) -> path.toString()).collect(Collectors.toList())
+            ).sorted(Comparator.comparing((list) -> list.get(0)));
+        } catch (InterruptedException | ExecutionException e) {
+            throw new DoubletException(e);
+        }
     }
 
     private Stream<List<Path>> findEquals(List<PathEntry> list) {
