@@ -1,5 +1,8 @@
 package iponom.doublet;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,13 +18,12 @@ import java.util.stream.Stream;
 /**
  * @author Ilya Ponomarev.
  */
+@Component
 public class ParallelStreamDuplicatesFinder implements DuplicatesFinder {
+
     private static final int PREFIX_SIZE = 128;
 
-    public ParallelStreamDuplicatesFinder() {
-        this.pathHashGenerator = new PathHashGenerator();
-    }
-
+    @Autowired
     private PathHashGenerator pathHashGenerator;
 
     @Override
@@ -70,7 +72,7 @@ public class ParallelStreamDuplicatesFinder implements DuplicatesFinder {
         try {
             long size = Files.size(path);
             long hash = pathHashGenerator.pathHash(path);
-            byte[] prefix = getPrefix(path, size > PREFIX_SIZE ? PREFIX_SIZE : (int)size);
+            byte[] prefix = getPrefix(path, size > PREFIX_SIZE ? PREFIX_SIZE : (int) size);
             return new PathEntry(new GroupKey(size, hash, prefix), path);
         } catch (IOException e) {
             throw new DoubletException(e);

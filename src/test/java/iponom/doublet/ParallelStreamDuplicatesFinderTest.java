@@ -1,7 +1,13 @@
 package iponom.doublet;
 
-import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -14,16 +20,29 @@ import static org.junit.Assert.*;
 /**
  * @author Ilya Ponomarev.
  */
+@RunWith(SpringRunner.class)
+@ContextConfiguration(loader=AnnotationConfigContextLoader.class)
 public class ParallelStreamDuplicatesFinderTest {
 
     private static final String ROOT = "src/test/resources/root";
 
-    ParallelStreamDuplicatesFinder duplicatesFinder;
+    @Configuration
+    static class ContextConfiguration {
 
-    @Before
-    public void setUp() throws Exception {
-        duplicatesFinder = new ParallelStreamDuplicatesFinder();
+        @Bean
+        PathHashGenerator pathHashGenerator() {
+            return new PathHashGenerator();
+        }
+
+        @Bean
+        ParallelStreamDuplicatesFinder duplicatesFinder() {
+            return new ParallelStreamDuplicatesFinder();
+        }
+
     }
+
+    @Autowired
+    ParallelStreamDuplicatesFinder duplicatesFinder;
 
     @Test
     public void search() throws Exception {

@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
+ * The EqualsAndHashCode lombok annotation generates an appropriate code for byte arrays too
  * @author Ilya Ponomarev.
  */
 @Getter
@@ -15,5 +16,5 @@ import lombok.Setter;
 public class GroupKey {
     private long size;
     private long hash;
-    byte [] prefix;
+    private byte[] prefix;
 }
