@@ -13,7 +13,7 @@
         <appender-ref ref="FILE" />
     </root>
 
-    <logger name="iponom.doublet.DoubletApplication" level="INFO">
+    <logger name="iponom.doublet.DoubletRunner" level="INFO">
         <appender-ref ref="CONSOLE"/>
     </logger>
 
