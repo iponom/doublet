@@ -4,7 +4,7 @@ Command line utility for finding files with the same content in a selected direc
 ### How to execute (Windows)
 ```
 mvn package
-java -jar target\doublet-1.0.jar C:\some\directory
+java -jar target\doublet-1.1-SNAPSHOT.jar C:\some\directory
 ```
 or
 ```
